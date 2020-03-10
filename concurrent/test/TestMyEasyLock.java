@@ -3,7 +3,7 @@ import lock.MyEasyLock;
 /**
  * 测试自定义锁
  */
-public class TestMyLock {
+public class TestMyEasyLock {
 
     /**
      * 多线程共享资源，倒数至0，每个数字只能使用一次

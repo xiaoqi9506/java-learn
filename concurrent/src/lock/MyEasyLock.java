@@ -5,7 +5,7 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 /**
  * 简单锁，继承自AbstractQueuedSynchronizer
  */
-public class MyEasyLock extends AbstractQueuedSynchronizer {
+public class MyEasyLock extends AbstractQueuedSynchronizer implements Lock{
 
     /**
      * 加锁方法

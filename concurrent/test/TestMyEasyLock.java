@@ -1,3 +1,4 @@
+import lock.Lock;
 import lock.MyEasyLock;
 
 /**
@@ -18,7 +19,8 @@ public class TestMyEasyLock {
     /**
      * 自定义锁
      */
-    private static final MyEasyLock lock = new MyEasyLock();
+    private static final Lock lock = new MyEasyLock();
+
 
     public static void main(String[] args) {
 

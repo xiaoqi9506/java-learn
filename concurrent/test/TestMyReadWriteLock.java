@@ -10,7 +10,7 @@ public class TestMyReadWriteLock {
 
     public static void main(String[] args) {
         for (int i = 0 ; i < 10 ; i++) {
-           new Thread(new Reader((i+1) * 1000)).start();
+           new Thread(new Reader(i+1)).start();
         }
         new Thread(new Manager("管理员")).start();
     }
@@ -82,7 +82,7 @@ public class TestMyReadWriteLock {
                 lock.readLock().unlock();
                 //隔一段时间再进行写操作
                 try {
-                    Thread.sleep(5*1000);
+                    Thread.sleep(readTime * 1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

@@ -11,7 +11,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 /**
  * 读写锁，如果没有写锁，都可以加读锁，只能一个线程加写锁；如果有写锁，
  *
- * todo 失败的读写锁，待完善
+ *
  */
 public class MyReadWriteLock implements ReadWriteLock {
 
@@ -23,6 +23,8 @@ public class MyReadWriteLock implements ReadWriteLock {
     private final ReadLock readLock;
 
     private final WriteLock writeLock;
+
+    private final Sync sync = new Sync();
 
     public MyReadWriteLock() {
         this.readLock = new ReadLock();
@@ -41,10 +43,11 @@ public class MyReadWriteLock implements ReadWriteLock {
         unsafe.compareAndSwapInt(this, writeFlagOffset, expect, update);
     }
 
-    /**
-     * 读锁
-     */
-    class ReadLock extends AbstractQueuedSynchronizer implements java.util.concurrent.locks.Lock {
+    public Sync getSync() {
+        return sync;
+    }
+
+    class Sync extends AbstractQueuedSynchronizer {
 
         @Override
         protected int tryAcquireShared(int arg) {
@@ -62,39 +65,6 @@ public class MyReadWriteLock implements ReadWriteLock {
         }
 
         @Override
-        public void lock() {
-            acquireShared(1);
-        }
-
-        @Override
-        public void lockInterruptibly() throws InterruptedException {
-
-        }
-
-        @Override
-        public boolean tryLock() {
-            return false;
-        }
-
-        @Override
-        public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
-            return false;
-        }
-
-        @Override
-        public void unlock() {
-            releaseShared(1);
-        }
-
-        @Override
-        public Condition newCondition() {
-            return null;
-        }
-    }
-
-    class WriteLock extends AbstractQueuedSynchronizer implements java.util.concurrent.locks.Lock {
-
-        @Override
         protected boolean tryAcquire(int arg) {
             if (getWriteFlag() > 0 || getState() > 0) {//已加写锁或读锁，不能加写锁，得等待读锁或者写锁释放
                 return false;
@@ -110,10 +80,22 @@ public class MyReadWriteLock implements ReadWriteLock {
             setExclusiveOwnerThread(null);
             return true;
         }
+    }
+
+    /**
+     * 读锁
+     */
+    class ReadLock implements java.util.concurrent.locks.Lock {
+
+        final Sync sync;
+
+        public ReadLock() {
+            sync = getSync();
+        }
 
         @Override
         public void lock() {
-            acquire(1);
+            sync.acquireShared(1);
         }
 
         @Override
@@ -133,7 +115,46 @@ public class MyReadWriteLock implements ReadWriteLock {
 
         @Override
         public void unlock() {
-            release(1);
+            sync.releaseShared(1);
+        }
+
+        @Override
+        public Condition newCondition() {
+            return null;
+        }
+    }
+
+    class WriteLock implements java.util.concurrent.locks.Lock {
+
+        final Sync sync;
+
+        public WriteLock() {
+            this.sync = getSync();
+        }
+
+        @Override
+        public void lock() {
+            sync.acquire(1);
+        }
+
+        @Override
+        public void lockInterruptibly() throws InterruptedException {
+
+        }
+
+        @Override
+        public boolean tryLock() {
+            return false;
+        }
+
+        @Override
+        public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
+            return false;
+        }
+
+        @Override
+        public void unlock() {
+            sync.release(1);
         }
 
         @Override
